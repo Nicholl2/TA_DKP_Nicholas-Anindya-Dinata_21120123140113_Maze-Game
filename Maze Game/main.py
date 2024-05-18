@@ -1,5 +1,6 @@
 import pygame
 import sys
+import random
 
 pygame.init()
 
@@ -21,7 +22,7 @@ BLUE = pygame.Color('blue')
 CREAM = pygame.Color('bisque2')
 
 player_pos = [TILE, TILE]
-enemy_pos = [TILE * (COLS - 1), TILE * (ROWS - 1)]
+enemy_pos = [TILE * (COLS - 1), TILE]  
 finish_pos = [TILE * (COLS - 2), TILE * (ROWS - 2)]  
 
 outer_walls = [
@@ -29,6 +30,24 @@ outer_walls = [
     pygame.Rect(0, HEIGHT - TILE, WIDTH, TILE),  
     pygame.Rect(0, 0, TILE, HEIGHT),  
     pygame.Rect(WIDTH - TILE, 0, TILE, HEIGHT)
+]
+
+maze = [
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1],
+    [1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1],
+    [1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1],
+    [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1],
+    [1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1],
+    [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1],
+    [1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1],
+    [1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+    [1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1],
+    [1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0]
 ]
 
 background_image = pygame.image.load("Assets/Awan1.jpeg")
@@ -81,17 +100,17 @@ def main_menu():
 def game_loop():
     global player_pos, enemy_pos
     player_pos = [TILE * 1, TILE * 1]
-    enemy_pos = [TILE * (COLS - 1), TILE * (ROWS - 1)]
+    enemy_pos = [TILE * (COLS - 1), TILE]  
 
     enemy_move_counter = 0
-    enemy_move_delay = 10
+    enemy_move_delay = 30 
 
     while True:
         sc.fill(CREAM)
         draw_grid()
 
         for wall in outer_walls:
-            pygame.draw.rect(sc, BLACK, wall)  
+            pygame.draw.rect(sc, BLACK, wall)
 
         player_rect = pygame.Rect(player_pos[0], player_pos[1], TILE, TILE)
         enemy_rect = pygame.Rect(enemy_pos[0], enemy_pos[1], TILE, TILE)
@@ -108,14 +127,15 @@ def game_loop():
             elif event.type == pygame.KEYDOWN:
                 new_pos = move_player(event.key, player_pos)
                 new_player_rect = pygame.Rect(new_pos[0], new_pos[1], TILE, TILE)
-                if not is_collision(new_player_rect, outer_walls):
+                if not is_collision(new_player_rect, outer_walls) and not is_collision(new_player_rect, maze):
                     player_pos = new_pos
 
-        if enemy_move_counter >= enemy_move_delay:
-            move_enemy(player_pos, enemy_pos)
-            enemy_move_counter = 0
+        if enemy_move_counter == 0:
+            enemy_new_pos = move_enemy(player_pos, enemy_pos)
+            enemy_pos = enemy_new_pos
+            enemy_move_counter = enemy_move_delay
         else:
-            enemy_move_counter += 1
+            enemy_move_counter -= 10
 
         if player_rect.colliderect(finish_rect):
             draw_text('Kau Menang!', title_font, ORANGE, sc, 450, 400)
@@ -133,9 +153,11 @@ def game_loop():
         clock.tick(30)
 
 def draw_grid():
-    for x in range(0, WIDTH, TILE):
-        for y in range(0, HEIGHT, TILE):
-            rect = pygame.Rect(x, y, TILE, TILE)
+    for y in range(ROWS):
+        for x in range(COLS):
+            rect = pygame.Rect(x * TILE, y * TILE, TILE, TILE)
+            if y < len(maze) and x < len(maze[y]) and maze[y][x] == 1:
+                sc.blit(wall_image, rect.topleft)
             pygame.draw.rect(sc, GREEN, rect, 1)
 
 def move_player(key, player_pos):
@@ -151,30 +173,53 @@ def move_player(key, player_pos):
     return [x, y]
 
 def is_collision(rect, walls):
-    for wall in walls:
-        if rect.colliderect(wall):
-            return True
+    if isinstance(walls, list) and isinstance(walls[0], list):  
+        for y in range(len(walls)):
+            for x in range(len(walls[y])):
+                if walls[y][x] == 1:
+                    maze_rect = pygame.Rect(x * TILE, y * TILE, TILE, TILE)
+                    if rect.colliderect(maze_rect):
+                        return True
+    else:  
+        for wall in walls:
+            if rect.colliderect(wall):
+                return True
     return False
 
 def move_enemy(player_pos, enemy_pos):
-    player_x, player_y = player_pos
     enemy_x, enemy_y = enemy_pos
 
-    if enemy_x < player_x:
-        enemy_x += TILE
-    elif enemy_x > player_x:
-        enemy_x -= TILE
+    possible_moves = []
+    if enemy_x < player_pos[0]:
+        possible_moves.append((enemy_x + TILE, enemy_y)) 
+    elif enemy_x > player_pos[0]:
+        possible_moves.append((enemy_x - TILE, enemy_y))  
 
-    if enemy_y < player_y:
-        enemy_y += TILE
-    elif enemy_y > player_y:
-        enemy_y -= TILE
+    if enemy_y < player_pos[1]:
+        possible_moves.append((enemy_x, enemy_y + TILE))  
+    elif enemy_y > player_pos[1]:
+        possible_moves.append((enemy_x, enemy_y - TILE))  
 
-    new_enemy_rect = pygame.Rect(enemy_x, enemy_y, TILE, TILE)
-    if not is_collision(new_enemy_rect, outer_walls):
-        enemy_pos[0], enemy_pos[1] = enemy_x, enemy_y
+    random.shuffle(possible_moves)
+
+    for move in possible_moves:
+        new_enemy_rect = pygame.Rect(move[0], move[1], TILE, TILE)
+        if not is_collision(new_enemy_rect, outer_walls) and not is_collision(new_enemy_rect, maze):
+            return move
+
+    alternative_moves = [
+        (enemy_x + TILE, enemy_y),
+        (enemy_x - TILE, enemy_y),
+        (enemy_x, enemy_y + TILE),
+        (enemy_x, enemy_y - TILE)
+    ]
+    random.shuffle(alternative_moves)
+    for move in alternative_moves:
+        new_enemy_rect = pygame.Rect(move[0], move[1], TILE, TILE)
+        if not is_collision(new_enemy_rect, outer_walls) and not is_collision(new_enemy_rect, maze):
+            return move
+
+    return enemy_pos
 
 if __name__ == "__main__":
     main_menu()
-
-
