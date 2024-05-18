@@ -8,6 +8,14 @@ Pastikan Anda telah menginstal perangkat lunak berikut:
 - Python 3.12 (11 atau 12 titik sekian kayaknya bisa)
 - Pygame 2.5.2 (cek versi pygame dengan mengcopy ini python3 -m pygame --version pada terminal atau command promt)
 
-# Cara memainkan
+## Cara memainkan
 Clone repository ini dan tinggal run saja pada vscode atau sejenisnya.
+Atau gini, copy ini pada terminal :
+
+- git init
+- git clone https://github.com/Nicholl2/TA_DKP_Nicholas-Anindya-Dinata_21120123140113_Maze-Game.git
+
+Buka dan run di vscode
+
+
 
