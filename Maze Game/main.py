@@ -8,14 +8,15 @@ TILE = 50
 COLS, ROWS = WIDTH // TILE, HEIGHT // TILE
 
 sc = pygame.display.set_mode(RES)
+pygame.display.set_caption("Maze Game")
 clock = pygame.time.Clock()
 
 RED = pygame.Color('red')
 BLACK = pygame.Color('black')
 WHITE = pygame.Color('white')
-ORANGE = pygame.Color ('chocolate1')
-GREEN = pygame.Color ('forestgreen')
-TURQUOISE = pygame.Color ('paleturquoise')
+ORANGE = pygame.Color('chocolate1')
+GREEN = pygame.Color('forestgreen')
+TURQUOISE = pygame.Color('paleturquoise')
 
 player_pos = [TILE // 2, TILE // 2]
 
@@ -27,44 +28,47 @@ walls = [
 
 background_image = pygame.image.load("Assets/Awan1.jpeg")
 background_image = pygame.transform.scale(background_image, (WIDTH, HEIGHT))
-
 title_font = pygame.font.Font("Assets/Copyduck.ttf", 72)
 start_font = pygame.font.Font('Assets/04B_30__.TTF', 48)
 menu_font = pygame.font.Font('Assets/04B_30__.TTF', 48)
-
 
 def draw_text(text, font, color, surface, x, y):
     textobj = font.render(text, 1, color)
     textrect = textobj.get_rect()
     textrect.topleft = (x, y)
     surface.blit(textobj, textrect)
+    return textrect
 
 def main_menu():
     while True:
         sc.blit(background_image, (0, 0))
         draw_text('Maze Game', title_font, ORANGE, sc, 400, 100)
-        draw_text('START', start_font,GREEN, sc, 500, 250)
-        draw_text('KELUAR', menu_font, RED, sc, 480, 400)
+        start_rect = draw_text('START', start_font, GREEN, sc, 500, 250)
+        keluar_rect = draw_text('KELUAR', menu_font, RED, sc, 480, 400)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_1:
+                if event.key == pygame.K_1:  
                     game_loop()
-                elif event.key == pygame.K_2:
+                elif event.key == pygame.K_2:  
                     pygame.quit()
                     sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_x, mouse_y = event.pos
-                if 500 <= mouse_x <= 700 and 250 <= mouse_y <= 350:
+                if start_rect.collidepoint((mouse_x, mouse_y)):
                     game_loop()
+                elif keluar_rect.collidepoint((mouse_x, mouse_y)):
+                    pygame.quit()
+                    sys.exit()
 
         pygame.display.flip()
         clock.tick(30)
 
 def game_loop():
+    player_pos = [TILE // 2, TILE // 2]  
     while True:
         sc.fill(BLACK)
         draw_grid()
@@ -114,3 +118,4 @@ def is_collision(player_rect, walls):
 
 if __name__ == "__main__":
     main_menu()
+
